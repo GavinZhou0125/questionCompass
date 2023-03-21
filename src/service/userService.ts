@@ -3,7 +3,7 @@ import {SendSmsResponse} from "src/modelAndView/User";
 import {generateRandomFourDigitNumber} from "src/utils/baseHelper";
 import {uuid} from "uuidv4";
 import MyError from "../exception";
-import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
+import { REQUEST_PARAMS_ERROR_CODE, SYSTEM_ERROR_CODE } from "../exception/errorCode";
 import { Op } from "sequelize";
 import { md5 } from "kitx";
 import UserModel from "../model/user";
@@ -44,18 +44,31 @@ export async function userGetCaptcha(mobile) {
 }
 
 
+export async function userVerifyName(username) {
+  let user = await UserModel.findOne({
+    where: {
+      [Op.or]: [{ username }]
+    }
+  });
+  if (user) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该用户名已被注册");
+  }
+  return "ok";
+}
+
+
 /**
  * 用户注册
- * @param username
- * @param password
- * @param mobile
- * @param captchaId
- * @param captcha
- * @return {Promise<boolean>}
+ * @param username 用户名
+ * @param password 密码
+ * @param mobile 手机号
+ * @param captchaUuid 验证码uuid
+ * @param captcha 验证码
+ * @return {Promise<boolean>} 注册成功返回true
  */
-export async function userRegister(username, password, mobile, captchaId, captcha) {
+export async function userRegister(username, password, mobile, captchaUuid, captcha) {
   // 校验
-  if (!username || !password || !mobile || !captchaId || !captcha) {
+  if (!username || !password || !mobile || !captchaUuid || !captcha) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
   if (username.length > 32) {
@@ -65,6 +78,14 @@ export async function userRegister(username, password, mobile, captchaId, captch
   if (!phoneRegex.test(mobile)) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
   }
+  redisClient.get(captchaUuid, (err, reply) => {
+    if (err) {
+      throw new MyError(SYSTEM_ERROR_CODE, "验证码校验错误");
+    }
+    if (reply !== captcha) {
+      throw new MyError(REQUEST_PARAMS_ERROR_CODE, "验证码错误");
+    }
+  });
   // 用户是否已存在
   let user = await UserModel.findOne({
     where: {
@@ -72,7 +93,7 @@ export async function userRegister(username, password, mobile, captchaId, captch
     }
   });
   if (user) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该用户名或邮箱已被注册");
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该用户名或手机号已被注册");
   }
   // 插入新用户
   const cryptoPassword = md5(password + SALT);

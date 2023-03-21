@@ -1,6 +1,6 @@
 import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
 import MyError from "../exception";
-import { userGetCaptcha, userRegister } from "../service/userService";
+import { userGetCaptcha, userRegister, userVerifyName } from "../service/userService";
 
 /**
  * 获取验证码
@@ -16,14 +16,22 @@ export async function userGetCaptchaApi(event, req, res) {
   return await userGetCaptcha( mobile );
 }
 
+
+export async function userVerifyNameApi(event, req, res){
+  const { username } = event;
+  if (!username) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "缺少用户名");
+  }
+  return await userVerifyName(username);
+}
+
 /**
  * 测通
  * @param event
  * @param req
  * @param res
  */
-export async function userTestApi( req, res) {
-  let req1 = req;
+export async function userTestApi( event, req, res) {
   return await userGetCaptcha("13685208896");
 }
 
