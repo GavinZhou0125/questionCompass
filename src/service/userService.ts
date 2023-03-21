@@ -1,13 +1,13 @@
 import redisClient from "src/cache";
 import {SendSmsResponse} from "src/modelAndView/User";
-import {generateRandomFourDigitNumber} from "src/utils/baseHelper";
+import { generateRandomFourDigitNumber, validatePhoneNum } from "src/utils/baseHelper";
 import {uuid} from "uuidv4";
 import MyError from "../exception";
 import { REQUEST_PARAMS_ERROR_CODE, SYSTEM_ERROR_CODE } from "../exception/errorCode";
 import { Op } from "sequelize";
-import { md5 } from "kitx";
 import UserModel from "../model/user";
 import SMSClient from "../thirdParty/SMS/sms";
+import  md5  from "md5";
 
 // 密码加盐
 const SALT = "coder_zxy";
@@ -19,8 +19,7 @@ const SALT = "coder_zxy";
  */
 export async function userGetCaptcha(mobile) {
   // 校验
-  const phoneRegex = /^1[3456789]\d{9}$/;
-  if (!phoneRegex.test(mobile)) {
+  if (!validatePhoneNum(mobile)) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
   }
   let user = await UserModel.findOne({
@@ -36,9 +35,9 @@ export async function userGetCaptcha(mobile) {
   // 生成验证码对应的uuid
   const captchaUuid = uuid();
   // 存入redis
-  redisClient.set(captchaUuid, captcha, "EX", 60 * 5);
+  redisClient.set(captchaUuid, captcha, "EX", 60 * 60);
   // 发送短信
-  // await SMSClient.main(process.argv.slice(2), mobile, "问答校园", "SMS_271405583", `{\"code\":\"${captcha}\"}`)
+  await SMSClient.main(process.argv.slice(2), mobile, "问答校园", "SMS_271405583", `{\"code\":\"${captcha}\"}`)
 
   return new SendSmsResponse(captchaUuid, "短信验证码发送成功");
 }
@@ -66,21 +65,20 @@ export async function userVerifyName(username) {
  * @param captcha 验证码
  * @return {Promise<boolean>} 注册成功返回true
  */
-export async function userRegister(username, password, mobile, captchaUuid, captcha) {
+export async function userRegister(name, password, mobile, captchaUuid, captcha) {
   // 校验
-  if (!username || !password || !mobile || !captchaUuid || !captcha) {
+  if (!name || !password || !mobile || !captchaUuid || !captcha) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
-  if (username.length > 32) {
+  if (name.length > 32) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "用户名过长");
   }
-  const phoneRegex = /^1[3456789]\d{9}$/;
-  if (!phoneRegex.test(mobile)) {
+  if (!validatePhoneNum(mobile)) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
   }
   redisClient.get(captchaUuid, (err, reply) => {
     if (err) {
-      throw new MyError(SYSTEM_ERROR_CODE, "验证码校验错误");
+      throw new MyError(SYSTEM_ERROR_CODE, "验证码校验错误或已过期");
     }
     if (reply !== captcha) {
       throw new MyError(REQUEST_PARAMS_ERROR_CODE, "验证码错误");
@@ -89,21 +87,44 @@ export async function userRegister(username, password, mobile, captchaUuid, capt
   // 用户是否已存在
   let user = await UserModel.findOne({
     where: {
-      [Op.or]: [{ username }, { mobile }]
+      [Op.or]: [{ name }, { mobile }]
     }
   });
   if (user) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该用户名或手机号已被注册");
   }
   // 插入新用户
-  const cryptoPassword = md5(password + SALT);
+  const cryptoPassword = md5(password + SALT).toString();
+  console.log(cryptoPassword);
   user = await UserModel.create({
-    username,
+    name,
     password: cryptoPassword,
-    mobile
+    mobile,
+    creator: name
   });
   return user.getDataValue("id");
 }
 
+
+export async function userLogin(mobile, password) {
+  // 校验
+  if (!validatePhoneNum(mobile)) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
+  }
+  let user = await UserModel.findOne({
+    where: {
+      [Op.or]: [{ mobile }]
+    }
+  });
+  if (!user) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该手机号未注册");
+  }
+  if (user.get("password") !== md5(password + SALT).toString() ){
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "密码错误");
+  }
+  const sessionId = uuid();
+  redisClient.set(sessionId, user.get("id"), "EX", 60 * 60 * 24 * 7);
+  return sessionId;
+}
 
 

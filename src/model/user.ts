@@ -9,7 +9,8 @@ import sequelize from "../db";
 const UserModel = sequelize.define('user', {
     id: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
+        defaultValue: 0,
         primaryKey: true
     },
     name: {
@@ -23,7 +24,7 @@ const UserModel = sequelize.define('user', {
     sex: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 3
+        defaultValue: 0
     },
     age: {
         type: DataTypes.INTEGER,

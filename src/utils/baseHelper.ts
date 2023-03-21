@@ -10,3 +10,8 @@ export function generateRandomFourDigitNumber(): string {
     const result = random.toString().padStart(4, '0');
     return result;
 }
+
+export function validatePhoneNum(phoneNum: string): boolean {
+    const phoneRegex = /^1[3456789]\d{9}$/;
+    return phoneRegex.test(phoneNum);
+}

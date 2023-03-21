@@ -33,6 +33,7 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
+    "@types/md5": "^2.3.2",
     "prettier": "2.8.4"
   }
 }
