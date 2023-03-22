@@ -18,6 +18,11 @@ export const routes = [
     path: "/user/login",
     handler: require("./controller/userController").userLoginApi,
   },
+  {
+    method: "GET",
+    path: "/user/verifyName",
+    handler: require("./controller/userController").userVerifyNameApi,
+  },
   // {
   //   path: "/user/logout",
   //   handler: require("./controller/userController").userLogoutApi,

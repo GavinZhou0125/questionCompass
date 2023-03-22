@@ -19,9 +19,7 @@ const SALT = "coder_zxy";
  */
 export async function userGetCaptcha(mobile) {
   // 校验
-  if (!validatePhoneNum(mobile)) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
-  }
+  validatePhoneNum(mobile);
   let user = await UserModel.findOne({
     where: {
       [Op.or]: [{ mobile }]
@@ -43,10 +41,10 @@ export async function userGetCaptcha(mobile) {
 }
 
 
-export async function userVerifyName(username) {
+export async function userVerifyName(name) {
   let user = await UserModel.findOne({
     where: {
-      [Op.or]: [{ username }]
+      [Op.or]: [{ name }]
     }
   });
   if (user) {
@@ -58,7 +56,7 @@ export async function userVerifyName(username) {
 
 /**
  * 用户注册
- * @param username 用户名
+ * @param name 用户名
  * @param password 密码
  * @param mobile 手机号
  * @param captchaUuid 验证码uuid
@@ -73,9 +71,7 @@ export async function userRegister(name, password, mobile, captchaUuid, captcha)
   if (name.length > 32) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "用户名过长");
   }
-  if (!validatePhoneNum(mobile)) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
-  }
+  validatePhoneNum(mobile);
   redisClient.get(captchaUuid, (err, reply) => {
     if (err) {
       throw new MyError(SYSTEM_ERROR_CODE, "验证码校验错误或已过期");
@@ -108,9 +104,7 @@ export async function userRegister(name, password, mobile, captchaUuid, captcha)
 
 export async function userLogin(mobile, password) {
   // 校验
-  if (!validatePhoneNum(mobile)) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
-  }
+  validatePhoneNum(mobile);
   let user = await UserModel.findOne({
     where: {
       [Op.or]: [{ mobile }]

@@ -5,6 +5,8 @@ import OpenApi, * as $OpenApi from '@alicloud/openapi-client';
 import Util, * as $Util from '@alicloud/tea-util';
 import * as $tea from '@alicloud/tea-typescript';
 import { devConfig } from "../../config/config";
+import { THIRD_PART_SERVICE_ERROR_CODE } from "../../exception/errorCode";
+import MyError from "../../exception";
 
 
 export default class SMSClient {
@@ -43,6 +45,9 @@ export default class SMSClient {
       // 复制代码运行请自行打印 API 的返回值
       const res = await client.sendSmsWithOptions(sendSmsRequest, runtime);
       console.log("短信发送成功"+res);
+      if (res.statusCode !== 200){
+        throw new MyError(THIRD_PART_SERVICE_ERROR_CODE,res.body.message);
+      }
     } catch (error) {
       // 如有需要，请打印 error
       Util.assertAsString(error.message);

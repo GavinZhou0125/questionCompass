@@ -1,3 +1,6 @@
+import MyError from "../exception";
+import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
+
 /**
  * 随机生成四位验证码
  *
@@ -13,5 +16,8 @@ export function generateRandomFourDigitNumber(): string {
 
 export function validatePhoneNum(phoneNum: string): boolean {
     const phoneRegex = /^1[3456789]\d{9}$/;
-    return phoneRegex.test(phoneNum);
+    if (!phoneRegex.test(phoneNum)){
+        throw new MyError(REQUEST_PARAMS_ERROR_CODE, "手机号非法");
+    }
+    return true;
 }

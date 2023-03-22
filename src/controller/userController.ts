@@ -1,7 +1,6 @@
 import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
 import MyError from "../exception";
 import { userGetCaptcha, userLogin, userRegister, userVerifyName } from "../service/userService";
-import  md5  from "md5";
 
 /**
  * 获取验证码
@@ -17,7 +16,12 @@ export async function userGetCaptchaApi(event, req, res) {
   return await userGetCaptcha( mobile );
 }
 
-
+/**
+ * 用户登录
+ * @param event 请求参数
+ * @param req 请求体
+ * @param res 相应体
+ */
 export async function userVerifyNameApi(event, req, res){
   const { username } = event;
   if (!username) {
@@ -33,7 +37,7 @@ export async function userVerifyNameApi(event, req, res){
  * @param res 相应体
  */
 export async function userTestApi( event, req, res) {
-  return md5("123456" + "123456");
+  return userGetCaptcha( "18941330125" );
 }
 
 
