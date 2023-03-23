@@ -1,13 +1,17 @@
 import sequelize from "../db";
 import { DataTypes } from "sequelize";
+import dayjs from "dayjs";
+
+const now = new Date();
+const offset = -now.getTimezoneOffset();
 
 const QuestionModel = sequelize.define("question_table", {
   problem_id: {
     type: DataTypes.INTEGER,
-    allowNull: true,
-    defaultValue: 0,
-    comment: "提问id",
-    unique: "question_table_problem_id_uindex"
+    defaultValue: undefined,
+    primaryKey: true,
+    autoIncrement: true,
+    comment: "提问id"
   },
   problem_title: {
     type: DataTypes.STRING(255),
@@ -27,6 +31,7 @@ const QuestionModel = sequelize.define("question_table", {
   problem_status: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    defaultValue: 0,
     comment: "问题状态"
   },
   problem_answer_id: {
@@ -47,6 +52,7 @@ const QuestionModel = sequelize.define("question_table", {
   create_time: {
     type: DataTypes.DATE,
     allowNull: false,
+    defaultValue: new Date(now.getTime() + offset * 60 * 1000),
     comment: "提问时间"
   },
   updater: {
@@ -66,8 +72,12 @@ const QuestionModel = sequelize.define("question_table", {
     comment: "提问的声望"
   }
 }, {
+  paranoid: true,
+  deletedAt: 'problem_deleted',
+  createdAt: 'create_time',
+  updatedAt: 'update_time',
   tableName: "question_table",
-  timestamps: false,
+  timestamps: true,
   indexes: [
     {
       name: "question_table_problem_id_uindex",

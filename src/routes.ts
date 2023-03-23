@@ -35,33 +35,62 @@ export const routes = [
     method: "GET",
     path: "/user/logout",
     handler: require("./controller/userController").userLogoutApi
-  }
+  },
   // 问题相关
-  // {
-  //   path: "/user/logout",
-  //   handler: require("./controller/userController").userLogoutApi,
-  // },
-  // {
-  //   path: "/user/current",
-  //   handler: require("./controller/userController").getLoginUserApi,
-  // },
-  // {
-  //   path: "/music/get",
-  //   handler: require("./controller/musicController").getSingleMusicApi,
-  // },
-  // {
-  //   path: "/music/list/hot",
-  //   handler: require("./controller/musicController").getPlaylistDetailApi,
-  // },
-  // {
-  //   path: "/fanyi/translate",
-  //   handler: require("./controller/fanyiController").translateApi,
-  // },
-  // {
-  //   path: "/background/get/random",
-  //   handler: require("./controller/backgroundController")
-  //     .getRandomBackgroundApi,
-  // },
+  {
+    security: true,
+    method: "POST",
+    path: "/question/add",
+    handler: require("./controller/questionController").addQuestionApi
+  },
+  {
+    security: true,
+    method: "POST",
+    path: "/question/update",
+    handler: require("./controller/questionController").updateQuestionApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/delete",
+    handler: require("./controller/questionController").deleteQuestionApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/get",
+    handler: require("./controller/questionController").queryQuestionApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/list",
+    handler: require("./controller/questionController").queryQuestionListApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/getAllByUser",
+    handler: require("./controller/questionController").queryQuestionListByUserApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/getAllByTag",
+    handler: require("./controller/questionController").queryQuestionListByTagApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/getAllByTitle",
+    handler: require("./controller/questionController").queryQuestionListByTitleApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/getAllByContent",
+    handler: require("./controller/questionController").queryQuestionListByContentApi
+  }
 ];
 
 export default routes;

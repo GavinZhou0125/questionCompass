@@ -8,6 +8,7 @@ import MyError from "./exception";
 import expressSession from "express-session";
 import connectRedis from "connect-redis";
 import sequelize from "./db";
+import * as console from "console";
 
 
 const RedisStore = connectRedis(expressSession);
@@ -95,7 +96,6 @@ class ExpressServer {
       let result;
       let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
       const headers = req[kHeaderSymbol];
-
       // 需要登录
       if (routeSecurity) {
         // 没有登陆过
@@ -109,7 +109,7 @@ class ExpressServer {
           // 登录过
         } else {
           // 校验登录状态
-          redisClient.get(headers.authorization, (err, reply) => {
+         await redisClient.get(headers.authorization, (err, reply) => {
             if (err) {
               console.log(err);
               result = {
@@ -131,9 +131,11 @@ class ExpressServer {
               }
             }
             // 登录正常
+           event.auth = reply
           });
         }
       }
+
       try {
         const startTime = new Date().getTime();
         let params;
