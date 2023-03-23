@@ -1,28 +1,42 @@
 export const routes = [
+  //用户登录注册
   {
+    security: false,
     method: "GET",
     path: "/user/test",
-    handler: require("./controller/userController").userTestApi,
+    handler: require("./controller/userController").userTestApi
   },
   {
+    security: false,
     method: "POST",
     path: "/user/getCaptcha",
-    handler: require("./controller/userController").userGetCaptchaApi,
-  },{
+    handler: require("./controller/userController").userGetCaptchaApi
+  },
+  {
+    security: false,
     method: "POST",
     path: "/user/register",
-    handler: require("./controller/userController").userRegisterApi,
+    handler: require("./controller/userController").userRegisterApi
   },
   {
+    security: false,
     method: "POST",
     path: "/user/login",
-    handler: require("./controller/userController").userLoginApi,
+    handler: require("./controller/userController").userLoginApi
   },
   {
+    security: false,
     method: "GET",
     path: "/user/verifyName",
-    handler: require("./controller/userController").userVerifyNameApi,
+    handler: require("./controller/userController").userVerifyNameApi
   },
+  {
+    security: true,
+    method: "GET",
+    path: "/user/logout",
+    handler: require("./controller/userController").userLogoutApi
+  }
+  // 问题相关
   // {
   //   path: "/user/logout",
   //   handler: require("./controller/userController").userLogoutApi,
@@ -50,4 +64,4 @@ export const routes = [
   // },
 ];
 
-export default routes
+export default routes;

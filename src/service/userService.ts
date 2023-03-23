@@ -1,13 +1,13 @@
 import redisClient from "src/cache";
 import {SendSmsResponse} from "src/modelAndView/User";
 import { generateRandomFourDigitNumber, validatePhoneNum } from "src/utils/baseHelper";
-import {uuid} from "uuidv4";
 import MyError from "../exception";
 import { REQUEST_PARAMS_ERROR_CODE, SYSTEM_ERROR_CODE } from "../exception/errorCode";
 import { Op } from "sequelize";
 import UserModel from "../model/user";
 import SMSClient from "../thirdParty/SMS/sms";
 import  md5  from "md5";
+import { v4 } from "uuid";
 
 // 密码加盐
 const SALT = "coder_zxy";
@@ -31,7 +31,7 @@ export async function userGetCaptcha(mobile) {
   // 生成验证码
   let captcha = generateRandomFourDigitNumber();
   // 生成验证码对应的uuid
-  const captchaUuid = uuid();
+  const captchaUuid = v4();
   // 存入redis
   redisClient.set(captchaUuid, captcha, "EX", 60 * 60);
   // 发送短信
@@ -116,9 +116,14 @@ export async function userLogin(mobile, password) {
   if (user.get("password") !== md5(password + SALT).toString() ){
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "密码错误");
   }
-  const sessionId = uuid();
+  const sessionId = v4();
   redisClient.set(sessionId, user.get("id"), "EX", 60 * 60 * 24 * 7);
   return sessionId;
 }
 
+
+export async function userLogout(sessionId) {
+  redisClient.del(sessionId);
+  return "see you";
+}
 

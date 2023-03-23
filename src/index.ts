@@ -7,7 +7,7 @@ const server = new ExpressServer();
 
 // 注册接口路由
 for (const route of routes) {
-  server.setRoute(route.path, route.handler, route.method);
+  server.setRoute(route.path, route.handler, route.method,route.security);
 }
 
 

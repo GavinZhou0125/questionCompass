@@ -3,23 +3,21 @@ import morgan from "morgan";
 import redisClient from "src/cache";
 import bodyParser from "body-parser";
 import http from "http";
-import { FORBIDDEN_ERROR_CODE } from "./exception/errorCode";
+import { FORBIDDEN_ERROR_CODE, HTTP_STATUS_CODE } from "./exception/errorCode";
 import MyError from "./exception";
-import expressSession from 'express-session';
-import connectRedis from 'connect-redis';
+import expressSession from "express-session";
+import connectRedis from "connect-redis";
+import sequelize from "./db";
 
 
 const RedisStore = connectRedis(expressSession);
-
-
-// console.log(devConfig);
 
 
 //请求大小限制
 const requestLimit = "5120kb";
 
 class ExpressServer {
-  private readonly app: any;
+  readonly app: any;
   private contextPath: string;
   private server: Application<Request, Response>;
 
@@ -30,13 +28,18 @@ class ExpressServer {
     //上下文请求路径
     this.contextPath = "/api";
     this.app.use(morgan("short"));
-    this.app.use(bodyParser.json({ limit: requestLimit }));
+    this.app.use(bodyParser.urlencoded({ limit: requestLimit }));
     // 禁用技术头
     this.app.set("x-powered-by", false);
     this.app.all("*", (req, res, next) => {
       // 开启跨域
       res.setHeader("Access-Control-Allow-Credentials", "true");
-      const origin = req.get("Origin");
+
+      //获取请求头
+      let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
+      const headers = req[kHeaderSymbol];
+
+      const origin = headers.origin;
       // 允许的地址 http://127.0.0.1:9000 这样的格式
       if (origin) {
         res.setHeader("Access-Control-Allow-Origin", origin);
@@ -72,20 +75,65 @@ class ExpressServer {
     this.server = http.createServer(this.app);
   }
 
-  setRoute(path, handlerFunction, routeMethod) {
+  setRoute(path, handlerFunction, routeMethod, routeSecurity) {
     const handler = async (req, res) => {
       // IP 过滤
       const requestClientIp = getClientIp(req);
+
       if (!requestClientIp) {
         return FORBIDDEN_ERROR_CODE;
       }
       let event = null;
+
+
       if (routeMethod === "GET") {
         event = req.query;
       } else if (routeMethod === "POST") {
         event = req.body;
       }
+      event.token = req.headers.authorization;
       let result;
+      let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
+      const headers = req[kHeaderSymbol];
+
+      // 需要登录
+      if (routeSecurity) {
+        // 没有登陆过
+        if (!headers.authorization) {
+          result = {
+            code: HTTP_STATUS_CODE.UNAUTHORIZED,
+            data: "请先登录"
+          };
+          res.send(result);
+          return;
+          // 登录过
+        } else {
+          // 校验登录状态
+          redisClient.get(headers.authorization, (err, reply) => {
+            if (err) {
+              console.log(err);
+              result = {
+                code: HTTP_STATUS_CODE.UNAUTHORIZED,
+                data: "请先登录"
+              };
+              res.send(result);
+              return;
+            }
+            if (reply) {
+              // 登录过期
+              if (reply === "expired") {
+                result = {
+                  code: HTTP_STATUS_CODE.UNAUTHORIZED,
+                  data: "登录过期"
+                };
+                res.send(result);
+                return;
+              }
+            }
+            // 登录正常
+          });
+        }
+      }
       try {
         const startTime = new Date().getTime();
         let params;

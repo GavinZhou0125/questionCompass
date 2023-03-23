@@ -3,10 +3,15 @@
   "version": "0.0.0",
   "private": false,
   "scripts": {
-    "start": "esno ./src/index.ts"
+    "start": "esno ./src/index.ts",
+    "startTest": "esno ./src/thirdParty/test.ts",
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@alicloud/dysmsapi20170525": "^2.0.23",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-typescript": "^7.21.0",
+    "@types/jest": "^29.5.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "connect-redis": "^6.0.0",
@@ -26,6 +31,7 @@
     "redis": "^3.0.2",
     "sequelize": "^6.21.3",
     "sequelize-auto": "^0.8.8",
+    "ts-jest": "^29.0.5",
     "ts-node": "^8.10.2",
     "typescript": "^4.6.3",
     "uuid": "^9.0.0",
@@ -34,6 +40,11 @@
   },
   "devDependencies": {
     "@types/md5": "^2.3.2",
-    "prettier": "2.8.4"
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^29.5.0",
+    "prettier": "2.8.4",
+    "superagent": "^8.0.9",
+    "supertest": "^6.3.3"
   }
 }

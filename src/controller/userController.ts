@@ -1,12 +1,12 @@
 import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
 import MyError from "../exception";
-import { userGetCaptcha, userLogin, userRegister, userVerifyName } from "../service/userService";
+import { userGetCaptcha, userLogin, userLogout, userRegister, userVerifyName } from "../service/userService";
 
 /**
  * 获取验证码
  * @param event 请求参数
  * @param req 请求体
- * @param res 相应体
+ * @param res 响应体
  */
 export async function userGetCaptchaApi(event, req, res) {
   const { mobile } = event;
@@ -20,7 +20,7 @@ export async function userGetCaptchaApi(event, req, res) {
  * 用户登录
  * @param event 请求参数
  * @param req 请求体
- * @param res 相应体
+ * @param res 响应体
  */
 export async function userVerifyNameApi(event, req, res){
   const { username } = event;
@@ -34,10 +34,10 @@ export async function userVerifyNameApi(event, req, res){
  * 测通
  * @param event 请求参数
  * @param req 请求体
- * @param res 相应体
+ * @param res 响应体
  */
 export async function userTestApi( event, req, res) {
-  return userGetCaptcha( "18941330125" );
+  return "pong";
 }
 
 
@@ -45,7 +45,7 @@ export async function userTestApi( event, req, res) {
  * 用户注册
  * @param event 请求参数
  * @param req 请求体
- * @param res 相应体
+ * @param res 响应体
  */
 export async function userRegisterApi(event, req, res) {
   const { username, password, mobile, captchaUuid, captcha } = event;
@@ -59,7 +59,7 @@ export async function userRegisterApi(event, req, res) {
  * 用户登录
  * @param event 请求参数
  * @param req 请求体
- * @param res 相应体
+ * @param res 响应体
  */
 export async function userLoginApi(event, req, res) {
   const { mobile, password } = event;
@@ -68,3 +68,19 @@ export async function userLoginApi(event, req, res) {
   }
   return await userLogin(mobile, password);
 }
+
+/**
+ * 用户登出
+ * @param event 请求参数
+ * @param req 请求体
+ * @param res 响应体
+ */
+export async function userLogoutApi(event, req, res) {
+  const { token } = event;
+  if (token) {
+    return userLogout(token)
+  }
+  return "already logout";
+}
+
+
