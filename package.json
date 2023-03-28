@@ -5,7 +5,7 @@
   "scripts": {
     "start": "esno ./src/index.ts",
     "startTest": "esno ./src/middleware/Test.ts",
-    "test": "jest --passWithNoTests"
+    "test": "esno ./src/middleware/Test.ts"
   },
   "dependencies": {
     "@alicloud/dysmsapi20170525": "^2.0.23",
@@ -13,6 +13,7 @@
     "@babel/preset-typescript": "^7.21.0",
     "@types/jest": "^29.5.0",
     "bcryptjs": "^2.4.3",
+    "bluebird": "^3.7.2",
     "body-parser": "^1.20.2",
     "connect-redis": "^6.0.0",
     "cookie-parser": "~1.4.4",

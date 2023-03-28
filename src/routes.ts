@@ -1,3 +1,5 @@
+import { addFileApi } from "./controller/fileController";
+
 export const routes = [
   //用户登录注册
   {
@@ -90,7 +92,12 @@ export const routes = [
     method: "GET",
     path: "/question/getAllByContent",
     handler: require("./controller/questionController").queryQuestionListByContentApi
+  },
+  {
+    security: true,
+    method: "POST",
+    path: "/upload",
+    handler: require("./controller/fileController").addFileApi
   }
 ];
-
 export default routes;

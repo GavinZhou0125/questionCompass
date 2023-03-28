@@ -52,7 +52,6 @@ const QuestionModel = sequelize.define("question_table", {
   create_time: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: new Date(now.getTime() + offset * 60 * 1000),
     comment: "提问时间"
   },
   updater: {

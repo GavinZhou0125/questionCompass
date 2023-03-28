@@ -45,7 +45,7 @@ export default class SMSClient {
       // 复制代码运行请自行打印 API 的返回值
       const res = await client.sendSmsWithOptions(sendSmsRequest, runtime);
       console.log("短信发送成功"+res);
-      if (res.statusCode !== 200){
+      if (res.statusCode !== 200 && res.body.message!== "OK"){
         throw new MyError(THIRD_PART_SERVICE_ERROR_CODE,res.body.message);
       }
     } catch (error) {

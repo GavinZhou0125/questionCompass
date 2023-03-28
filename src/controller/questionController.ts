@@ -10,18 +10,21 @@ import {
 import redisClient from "../cache";
 
 export async function addQuestionApi(event, req, res) {
+  console.log(111);
   const { title, imageId, content, tags, token } = event;
   if (!title || !content || !tags || !token) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
-  await redisClient.get(token, (err, reply) => {
+  let creator = 0
+  redisClient.get(token, (err, reply) => {
     if (err) {
       throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误,token查询失败");
     }
     if (reply) {
-      return addQuestion(title, imageId, content, tags, reply);
+      creator = reply
     }
   })
+  await addQuestion(title, imageId, content, tags, creator);
   return;
 }
 

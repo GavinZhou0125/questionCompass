@@ -48,7 +48,7 @@ export async function userVerifyName(name) {
     }
   });
   if (user) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该用户名已被注册");
+    return "用户名已存在";
   }
   return "ok";
 }

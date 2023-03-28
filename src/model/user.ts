@@ -8,10 +8,10 @@ import sequelize from "../db";
  */
 const UserModel = sequelize.define('user', {
     id: {
-        type: DataTypes.STRING(255),
-        allowNull: true,
-        defaultValue: 0,
-        primaryKey: true
+        type: DataTypes.INTEGER,
+        defaultValue: undefined,
+        primaryKey: true,
+        autoIncrement: true,
     },
     name: {
         type: DataTypes.STRING(255),
@@ -23,7 +23,7 @@ const UserModel = sequelize.define('user', {
     },
     sex: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         defaultValue: 0
     },
     age: {
@@ -36,7 +36,7 @@ const UserModel = sequelize.define('user', {
     },
     status: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         defaultValue: 1
     },
     head_img: {
@@ -55,7 +55,7 @@ const UserModel = sequelize.define('user', {
     },
     creator: {
         type: DataTypes.STRING(255),
-        allowNull: false
+        allowNull: true
     },
     create_time: {
         type: DataTypes.DATE,
@@ -76,35 +76,11 @@ const UserModel = sequelize.define('user', {
     timestamps: false,
     indexes: [
         {
-            name: "PRIMARY",
-            unique: true,
-            using: "BTREE",
-            fields: [
-                {name: "id"},
-            ]
-        },
-        {
             name: "user_id_uindex",
             unique: true,
             using: "BTREE",
             fields: [
                 {name: "id"},
-            ]
-        },
-        {
-            name: "user_mobile_uindex",
-            unique: true,
-            using: "BTREE",
-            fields: [
-                {name: "mobile"},
-            ]
-        },
-        {
-            name: "user_e_mail_uindex",
-            unique: true,
-            using: "BTREE",
-            fields: [
-                {name: "e_mail"},
             ]
         },
     ]

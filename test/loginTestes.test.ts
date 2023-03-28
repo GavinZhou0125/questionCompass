@@ -23,15 +23,15 @@ describe("登录系列接口测试", () => {
       mobile: "13685208896"
     };
 
-    // encode data as x-www-form-urlencoded
-    const formData = new URLSearchParams();
-    Object.keys(data).forEach((key) => {
-      formData.append(key, data[key]);
-    });
+    // // encode data as x-www-form-urlencoded
+    // const formData = new URLSearchParams();
+    // Object.keys(data).forEach((key) => {
+    //   formData.append(key, data[key]);
+    // });
     const res = await request(server.app)
       .post("/api/user/login")
-      .set("Content-Type", "application/x-www-form-urlencoded")
-      .send(formData.toString())
+      // .set("Content-Type", "application/x-www-form-urlencoded")
+      .send(data)
     expect(res.body.code).toEqual(200);
     expect(res.body.data).toHaveLength(36)
   });

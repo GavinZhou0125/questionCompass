@@ -7,8 +7,10 @@ import { FORBIDDEN_ERROR_CODE, HTTP_STATUS_CODE } from "./exception/errorCode";
 import MyError from "./exception";
 import expressSession from "express-session";
 import connectRedis from "connect-redis";
-import sequelize from "./db";
 import * as console from "console";
+import upload from "./middleware/upload";
+import { devConfig } from "./config/config";
+import * as path from "path";
 
 
 const RedisStore = connectRedis(expressSession);
@@ -29,34 +31,38 @@ class ExpressServer {
     //上下文请求路径
     this.contextPath = "/api";
     this.app.use(morgan("short"));
-    this.app.use(bodyParser.urlencoded({ limit: requestLimit }));
+    this.app.use(bodyParser.json({ limit: requestLimit }));
+
+    this.app.use("/upload",express.static(path.join(__dirname, devConfig.upload.requestPath)));
+    //debug 使用 form-data 方式传参
+    // this.app.use(bodyParser.urlencoded({ limit: requestLimit }));
     // 禁用技术头
     this.app.set("x-powered-by", false);
     this.app.all("*", (req, res, next) => {
       // 开启跨域
       res.setHeader("Access-Control-Allow-Credentials", "true");
 
-      //获取请求头
-      let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
-      const headers = req[kHeaderSymbol];
+        //获取请求头
+        let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
+        const headers = req[kHeaderSymbol];
 
-      const origin = headers.origin;
-      // 允许的地址 http://127.0.0.1:9000 这样的格式
-      if (origin) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-      }
-      // 允许跨域请求的方法
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "POST, GET, OPTIONS, DELETE, PUT"
-      );
-      // 允许跨域请求 header 携带哪些东西
-      res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Authorization ,Content-Type, Accept, If-Modified-Since"
-      );
-      next();
-    });
+        const origin = headers.origin;
+        // 允许的地址 http://127.0.0.1:9000 这样的格式
+        if (origin) {
+          res.setHeader("Access-Control-Allow-Origin", origin);
+        }
+        // 允许跨域请求的方法
+        res.setHeader(
+          "Access-Control-Allow-Methods",
+          "POST, GET, OPTIONS, DELETE, PUT"
+        );
+        // 允许跨域请求 header 携带哪些东西
+        res.header(
+          "Access-Control-Allow-Headers",
+          "Origin, X-Requested-With, Authorization ,Content-Type, Accept, If-Modified-Since"
+        );
+        next();
+      });
     const sessionOptions = {
       // store session存储实例，默认为一个新的 MemoryStore 实例。
       store: new RedisStore({ client: redisClient }), // 只需设置这个就可存储到redis
@@ -92,14 +98,19 @@ class ExpressServer {
       } else if (routeMethod === "POST") {
         event = req.body;
       }
-      event.token = req.headers.authorization;
+      const token = req.headers.authorization;
+      event.token = token;
+      // event.auth = await validateToken(token);
       let result;
-      let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
-      const headers = req[kHeaderSymbol];
+
+      // debug 如果拿不到authorization，可以尝试用下面的方式拿
+      // let kHeaderSymbol = Object.getOwnPropertySymbols(req).find((s) => s.toString().match(/kHeaders/));
+      // const headers = req[kHeaderSymbol];
+
       // 需要登录
       if (routeSecurity) {
         // 没有登陆过
-        if (!headers.authorization) {
+        if (!req.headers.authorization) {
           result = {
             code: HTTP_STATUS_CODE.UNAUTHORIZED,
             data: "请先登录"
@@ -109,30 +120,21 @@ class ExpressServer {
           // 登录过
         } else {
           // 校验登录状态
-         await redisClient.get(headers.authorization, (err, reply) => {
-            if (err) {
-              console.log(err);
+          // event.auth = validateToken(req.headers.authorization);
+          await redisClient.getAsync(token).then((data) => {
+            if (data) {
+              event.auth = JSON.parse(data);
+              req.auth = JSON.parse(data);
+            } else {
               result = {
                 code: HTTP_STATUS_CODE.UNAUTHORIZED,
-                data: "请先登录"
+                data: "登录已过期"
               };
               res.send(result);
               return;
             }
-            if (reply) {
-              // 登录过期
-              if (reply === "expired") {
-                result = {
-                  code: HTTP_STATUS_CODE.UNAUTHORIZED,
-                  data: "登录过期"
-                };
-                res.send(result);
-                return;
-              }
-            }
-            // 登录正常
-           event.auth = reply
           });
+
         }
       }
 
@@ -147,7 +149,10 @@ class ExpressServer {
           params = JSON.stringify(event);
         }
         console.log(
-          `req start path = ${req.path}, clientIp = ${requestClientIp}, method = ${req.method}, params = ${params}`
+          `req start path = ${req.path}, 
+          clientIp = ${requestClientIp}, 
+          method = ${req.method}, 
+          params = ${params}`
         );
         result = await handlerFunction(event, req, res);
         // 封装响应
@@ -156,11 +161,11 @@ class ExpressServer {
           data: result
         };
         console.log(
-          `req end path = ${
-            req.path
-          }, clientIp = ${requestClientIp},method = ${routeMethod}, params = ${params}, costTime = ${
-            new Date().getTime() - startTime
-          }`
+          `req end path = ${req.path}, 
+          clientIp = ${requestClientIp},
+          method = ${routeMethod}, 
+          params = ${params}, 
+          costTime = ${new Date().getTime() - startTime}`
         );
       } catch (e) {
         // 全局异常处理
@@ -187,7 +192,7 @@ class ExpressServer {
       res.send(result);
     };
     if (routeMethod === "POST") {
-      this.app.post(this.contextPath + path, handler);
+      this.app.post(this.contextPath + path, upload.single(devConfig.upload.fileName), handler);
     } else if (routeMethod === "GET") {
       this.app.get(this.contextPath + path, handler);
     }

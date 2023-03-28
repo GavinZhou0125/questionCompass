@@ -13,6 +13,7 @@ const sequelize = new Sequelize({
   port: devConfig.dbConfig.port,
   dialect: "mysql",
   logging: console.log,
+  timezone: '+08:00'
 });
 
 // 测试连接
