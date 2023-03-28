@@ -17,3 +17,4 @@ package-lock.json
 .history
 .env
 public/**/*
+src/config/config.ts
