@@ -22,6 +22,35 @@ export async function addQuestion(title, imageId, content, tags, userId) {
   return new MyError(NOT_FOUND_ERROR_CODE, "添加问题失败");
 }
 
+export async function answerQuestion(questionId, answerContent, userId) {
+  if (!questionId || !answerContent|| !(userId + 1)) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  // 查询对应questionId的问题，修改其状态为1
+  const question = await QuestionModel.findOne({
+    where: {
+      problem_id: Number.parseInt(questionId)
+    }
+  });
+  if (!question) {
+    throw new MyError(NOT_FOUND_ERROR_CODE, "问题不存在");
+  }
+  question.set("problem_status", 1);
+  question.save();
+
+
+  const answer = await QuestionModel.create({
+    problem_answer_id: Number.parseInt(questionId),
+    problem_content: answerContent,
+    creator: userId
+  });
+
+  if (answer) {
+    return "OK";
+  }
+
+}
+
 export async function queryQuestion(questionId) {
   if (!questionId) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
@@ -38,6 +67,26 @@ export async function queryQuestion(questionId) {
 }
 
 
+export async function queryAnswerList(questionId,offset, limit) {
+  QuestionModel.belongsTo(FileModel, { foreignKey: "problem_title_image_id", targetKey: "file_id" });
+  const questionList = await QuestionModel.findAll({
+    include: [FileModel],
+    offset: Number.parseInt(offset),
+    limit: Number.parseInt(limit),
+    where: {
+      problem_answer_id: questionId
+    },
+    order: [
+      ["create_time", "DESC"],
+    ]
+  });
+  if (questionList) {
+    return questionList;
+  }
+  return new MyError(NOT_FOUND_ERROR_CODE, "回答列表为空");
+}
+
+
 export async function queryQuestionList(offset, limit) {
   QuestionModel.belongsTo(FileModel, { foreignKey: "problem_title_image_id", targetKey: "file_id" });
   const questionList = await QuestionModel.findAll({
@@ -47,6 +96,9 @@ export async function queryQuestionList(offset, limit) {
     where: {
       problem_answer_id: null
     },
+    order: [
+      ["create_time", "DESC"],
+    ]
   });
   if (questionList) {
     return questionList;

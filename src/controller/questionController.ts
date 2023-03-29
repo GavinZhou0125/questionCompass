@@ -1,31 +1,41 @@
 import MyError from "../exception";
 import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
 import {
-  addQuestion, deleteQuestion,
+  addQuestion,
+  answerQuestion,
+  deleteQuestion,
+  queryAnswerList,
   queryQuestion,
-  queryQuestionList, queryQuestionListByContent,
-  queryQuestionListByTag, queryQuestionListByTitle,
-  queryQuestionListByUser, updateQuestion
+  queryQuestionList,
+  queryQuestionListByContent,
+  queryQuestionListByTag,
+  queryQuestionListByTitle,
+  queryQuestionListByUser,
+  updateQuestion
 } from "../service/questionService";
 import redisClient from "../cache";
 
 export async function addQuestionApi(event, req, res) {
-  console.log(111);
   const { title, imageId, content, tags, token } = event;
   if (!title || !content || !tags || !token) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
-  let creator = 0
-  redisClient.get(token, (err, reply) => {
+  const creator = await redisClient.get(token, (err, reply) => {
     if (err) {
       throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误,token查询失败");
     }
-    if (reply) {
-      creator = reply
-    }
-  })
-  await addQuestion(title, imageId, content, tags, creator);
-  return;
+  });
+  return addQuestion(title, imageId, content, tags, creator);
+}
+
+
+export async function answerQuestionApi(event, req, res) {
+  const { questionId, content, auth } = event;
+  if (!questionId || !content || !auth) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+
+  return answerQuestion(questionId, content, auth);
 }
 
 export async function queryQuestionApi(event, req, res) {
@@ -34,6 +44,15 @@ export async function queryQuestionApi(event, req, res) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
   return queryQuestion(questionId);
+}
+
+export async function answerListApi(event, req, res) {
+  const { offset, limit, questionId } = event;
+  if (!offset || !limit) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  return queryAnswerList(questionId, offset, limit);
+
 }
 
 export async function queryQuestionListApi(event, req, res) {
@@ -60,7 +79,7 @@ export async function queryQuestionListByUserApi(event, req, res) {
   return queryQuestionListByUser(userid, offset, limit);
 }
 
-export async function  queryQuestionListByTitleApi(event, req, res) {
+export async function queryQuestionListByTitleApi(event, req, res) {
   const { title, offset, limit } = event;
   if (!title || !offset || !limit) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
@@ -68,7 +87,7 @@ export async function  queryQuestionListByTitleApi(event, req, res) {
   return queryQuestionListByTitle(title, offset, limit);
 }
 
-export async function  queryQuestionListByContentApi(event, req, res) {
+export async function queryQuestionListByContentApi(event, req, res) {
   const { content, offset, limit } = event;
   if (!content || !offset || !limit) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");

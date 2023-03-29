@@ -48,6 +48,18 @@ export const routes = [
   {
     security: true,
     method: "POST",
+    path: "/question/answer",
+    handler: require("./controller/questionController").answerQuestionApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/answerList",
+    handler: require("./controller/questionController").answerListApi
+  },
+  {
+    security: true,
+    method: "POST",
     path: "/question/update",
     handler: require("./controller/questionController").updateQuestionApi
   },
