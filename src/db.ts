@@ -1,5 +1,8 @@
 import { Sequelize } from "sequelize";
 import { devConfig } from "./config/config";
+import QuestionModel from "./model/questionTable";
+import FileModel from "./model/fileTable";
+import UserModel from "./model/user";
 
 /**
  * 创建数据库实例
@@ -25,5 +28,6 @@ sequelize
   .catch((e) => {
     console.error("无法连接到 MySQL", e);
   });
+
 
 export default sequelize

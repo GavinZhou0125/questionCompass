@@ -1,13 +1,14 @@
 import redisClient from "src/cache";
-import {SendSmsResponse} from "src/modelAndView/User";
+import { SendSmsResponse } from "src/modelAndView/User";
 import { generateRandomFourDigitNumber, validatePhoneNum } from "src/utils/baseHelper";
 import MyError from "../exception";
-import { REQUEST_PARAMS_ERROR_CODE, SYSTEM_ERROR_CODE } from "../exception/errorCode";
+import { NOT_FOUND_ERROR_CODE, REQUEST_PARAMS_ERROR_CODE, SYSTEM_ERROR_CODE } from "../exception/errorCode";
 import { Op } from "sequelize";
 import UserModel from "../model/user";
 import SMSClient from "../thirdParty/SMS/sms";
-import  md5  from "md5";
+import md5 from "md5";
 import { v4 } from "uuid";
+import FileModel from "../model/fileTable";
 
 // 密码加盐
 const SALT = "coder_zxy";
@@ -35,7 +36,7 @@ export async function userGetCaptcha(mobile) {
   // 存入redis
   redisClient.set(captchaUuid, captcha, "EX", 60 * 60);
   // 发送短信
-  await SMSClient.main(process.argv.slice(2), mobile, "问答校园", "SMS_271405583", `{\"code\":\"${captcha}\"}`)
+  await SMSClient.main(process.argv.slice(2), mobile, "问答校园", "SMS_271405583", `{\"code\":\"${captcha}\"}`);
 
   return new SendSmsResponse(captchaUuid, "短信验证码发送成功");
 }
@@ -102,28 +103,54 @@ export async function userRegister(name, password, mobile, captchaUuid, captcha)
 }
 
 
+/**
+ * 用户登录
+ * @param mobile 手机号
+ * @param password 密码
+ */
 export async function userLogin(mobile, password) {
+  UserModel.belongsTo(FileModel, { foreignKey: "head_img", targetKey: "file_id" });
+
   // 校验
   validatePhoneNum(mobile);
-  let user = await UserModel.findOne({
-    where: {
-      [Op.or]: [{ mobile }]
-    }
+  const user = await UserModel.findOne({
+    where: { mobile: mobile },
+    include: [FileModel]
   });
   if (!user) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该手机号未注册");
+    throw new MyError(NOT_FOUND_ERROR_CODE, "该手机号未注册");
   }
-  if (user.get("password") !== md5(password + SALT).toString() ){
+  if (user.get("password") !== md5(password + SALT).toString()) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "密码错误");
   }
   const sessionId = v4();
   redisClient.set(sessionId, user.get("id"), "EX", 60 * 60 * 24 * 7);
-  return sessionId;
+  const res = {
+    id: user.get("id"),
+    name: user.get("name"),
+    avatar: user.get("file_table"),
+    token: sessionId
+  }
+  return res;
 }
 
 
 export async function userLogout(sessionId) {
   redisClient.del(sessionId);
   return "see you";
+}
+
+export async function userChangeAvatar(fileId, auth) {
+  let user = await UserModel.findOne({
+    where: {
+      id: Number.parseInt(auth)
+    }
+  });
+  if (!user) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "用户不存在");
+  }
+  user.set("head_img", Number.parseInt(fileId));
+  user.save();
+  return "ok";
 }
 

@@ -40,8 +40,9 @@ const UserModel = sequelize.define('user', {
         defaultValue: 1
     },
     head_img: {
-        type: DataTypes.STRING(255),
-        allowNull: true
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0
     },
     e_mail: {
         type: DataTypes.STRING(255),
@@ -68,12 +69,15 @@ const UserModel = sequelize.define('user', {
     is_deleted: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        defaultValue: 0,
         comment: "是否被删除"
     }
 }, {
     tableName: 'user',
-    timestamps: false,
+    timestamps: true,
+    deletedAt: 'is_deleted',
+    createdAt: 'create_time',
+    updatedAt: 'update_time',
+    paranoid: true,
     indexes: [
         {
             name: "user_id_uindex",
@@ -82,7 +86,21 @@ const UserModel = sequelize.define('user', {
             fields: [
                 {name: "id"},
             ]
-        },
+        }, {
+            name: "user_head_img_index",
+            unique: false,
+            using: "BTREE",
+            fields: [
+                { name: "head_img" }
+            ]
+        }, {
+            name: "user_mobile_uindex",
+            unique: true,
+            using: "BTREE",
+            fields: [
+                { name: "user_mobile" }
+            ]
+        }
     ]
 });
 

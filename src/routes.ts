@@ -38,6 +38,12 @@ export const routes = [
     path: "/user/logout",
     handler: require("./controller/userController").userLogoutApi
   },
+  {
+    security: true,
+    method: "POST",
+    path: "/user/changeAvatar",
+    handler: require("./controller/userController").userChangeAvatarApi
+  },
   // 问题相关
   {
     security: true,

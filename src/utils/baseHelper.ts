@@ -23,24 +23,15 @@ export function validatePhoneNum(phoneNum: string): boolean {
   return true;
 }
 
-//TODO 修一修
-export function validateToken(token: string) {
-  let result: string | null = null;
+export async function validateToken(token: string) {
   if (!token) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "token非法");
   }
-  redisClient.get(token, (err, reply) => {
-
-    while (reply === null) {
-      // 等待 RedisClient.get() 完成
+  await redisClient.getAsync(token).then((data) => {
+    if (data) {
+      return data;
+    } else {
+      throw new MyError(REQUEST_PARAMS_ERROR_CODE, "校验失败");
     }
-    if (err) {
-      throw new MyError(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, "服务器错误");
-    }
-    if (!reply) {
-      throw new MyError(REQUEST_PARAMS_ERROR_CODE, "token非法");
-    }
-    result = reply;
   });
-  return result;
 }

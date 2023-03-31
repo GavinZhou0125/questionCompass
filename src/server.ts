@@ -11,6 +11,7 @@ import * as console from "console";
 import upload from "./middleware/upload";
 import { devConfig } from "./config/config";
 import * as path from "path";
+import { validateToken } from "./utils/baseHelper";
 
 
 const RedisStore = connectRedis(expressSession);
@@ -100,7 +101,6 @@ class ExpressServer {
       }
       const token = req.headers.authorization;
       event.token = token;
-      // event.auth = await validateToken(token);
       let result;
 
       // debug 如果拿不到authorization，可以尝试用下面的方式拿
@@ -115,12 +115,11 @@ class ExpressServer {
             code: HTTP_STATUS_CODE.UNAUTHORIZED,
             data: "请先登录"
           };
-          res.send(result);
+          // res.send(result);
           return;
           // 登录过
         } else {
           // 校验登录状态
-          // event.auth = validateToken(req.headers.authorization);
           await redisClient.getAsync(token).then((data) => {
             if (data) {
               event.auth = JSON.parse(data);
@@ -130,7 +129,6 @@ class ExpressServer {
                 code: HTTP_STATUS_CODE.UNAUTHORIZED,
                 data: "登录已过期"
               };
-              res.send(result);
               return;
             }
           });
