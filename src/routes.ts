@@ -1,4 +1,6 @@
 import { addFileApi } from "./controller/fileController";
+import { queryUserByIdApi } from "./controller/userController";
+import { questionReputationChangeApi } from "./controller/questionController";
 
 export const routes = [
   //用户登录注册
@@ -43,6 +45,18 @@ export const routes = [
     method: "POST",
     path: "/user/changeAvatar",
     handler: require("./controller/userController").userChangeAvatarApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/user/query",
+    handler: require("./controller/userController").queryUserApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/user/getById",
+    handler: require("./controller/userController").queryUserByIdApi
   },
   // 问题相关
   {
@@ -96,6 +110,12 @@ export const routes = [
   {
     security: true,
     method: "GET",
+    path: "/question/getAllAnswerByUser",
+    handler: require("./controller/questionController").queryAnswerListByUserApi
+  },
+  {
+    security: true,
+    method: "GET",
     path: "/question/getAllByTag",
     handler: require("./controller/questionController").queryQuestionListByTagApi
   },
@@ -110,6 +130,12 @@ export const routes = [
     method: "GET",
     path: "/question/getAllByContent",
     handler: require("./controller/questionController").queryQuestionListByContentApi
+  },
+  {
+    security: true,
+    method: "POST",
+    path: "/question/like",
+    handler: require("./controller/questionController").questionReputationChangeApi
   },
   {
     security: true,

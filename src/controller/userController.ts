@@ -1,6 +1,7 @@
 import { REQUEST_PARAMS_ERROR_CODE } from "../exception/errorCode";
 import MyError from "../exception";
 import {
+  queryUser,
   userChangeAvatar,
   userGetCaptcha,
   userLogin,
@@ -98,4 +99,19 @@ export async function userLogoutApi(event, req, res) {
   return "already logout";
 }
 
+export async function queryUserApi(event, req, res) {
+  const { auth } = event;
+  if (!auth) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  return await queryUser(auth);
+}
+
+export async function queryUserByIdApi(event, req, res) {
+  const { user } = event;
+  if (!user) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  return await queryUser(user);
+}
 

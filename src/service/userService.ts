@@ -9,6 +9,8 @@ import SMSClient from "../thirdParty/SMS/sms";
 import md5 from "md5";
 import { v4 } from "uuid";
 import FileModel from "../model/fileTable";
+import QuestionModel from "../model/questionTable";
+import sequelize from "../db";
 
 // 密码加盐
 const SALT = "coder_zxy";
@@ -130,7 +132,7 @@ export async function userLogin(mobile, password) {
     name: user.get("name"),
     avatar: user.get("file_table"),
     token: sessionId
-  }
+  };
   return res;
 }
 
@@ -154,3 +156,25 @@ export async function userChangeAvatar(fileId, auth) {
   return "ok";
 }
 
+export async function queryUser(auth) {
+  UserModel.belongsTo(FileModel, { foreignKey: "head_img", targetKey: "file_id" });
+  UserModel.hasMany(QuestionModel, { foreignKey: "problem_id", sourceKey: "creator" });
+  let user = await UserModel.findOne({
+    where: {
+      id: Number.parseInt(auth)
+    },
+    include: [{ model: FileModel }],
+    attributes:{
+      include: [
+        [sequelize.literal(`(SELECT COUNT(*) FROM question_table WHERE question_table.creator = user.id AND problem_answer_id IS NULL )`), 'question_count'],
+        [sequelize.literal(`(SELECT COUNT(*) FROM question_table WHERE question_table.creator = user.id AND problem_answer_id IS not NULL)`), 'answer_count'],
+        [sequelize.literal(`(SELECT SUM(problem_reputation) FROM question_table WHERE question_table.creator = user.id AND problem_answer_id IS NULL)`), 'question_reputation']
+      ]
+    }
+  });
+  if (!user) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "用户不存在");
+  }
+  user.set("mobile", user.get("mobile").toString().substring(0, 3) + "****" + user.get("mobile").toString().substring(7, 11));
+  return user;
+}

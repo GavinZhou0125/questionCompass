@@ -52,6 +52,10 @@ const QuestionModel = sequelize.define("question_table", {
   create_time: {
     type: DataTypes.DATE,
     allowNull: false,
+    get() {
+      let createDate = this.getDataValue('create_time');
+      return dayjs(createDate).format('YYYY-MM-DD')
+    },
     comment: "提问时间"
   },
   updater: {
