@@ -104,6 +104,43 @@ export async function userRegister(name, password, mobile, captchaUuid, captcha)
   return user.getDataValue("id");
 }
 
+/**
+ * 用户注册
+ * @param name 用户名
+ * @param password 密码
+ * @param mobile 手机号
+ * @param captchaUuid 验证码uuid
+ * @param captcha 验证码
+ * @return {Promise<boolean>} 注册成功返回true
+ */
+export async function userChangeMobile(id, mobile, captchaUuid, captcha) {
+  // 校验
+  if (!id || !mobile || !captchaUuid || !captcha) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  validatePhoneNum(mobile);
+  await redisClient.get(captchaUuid, (err, reply) => {
+    if (err) {
+      throw new MyError(SYSTEM_ERROR_CODE, "验证码校验错误或已过期");
+    }
+    if (reply !== captcha) {
+      throw new MyError(REQUEST_PARAMS_ERROR_CODE, "验证码错误");
+    }
+  });
+  // 用户是否已存在
+  let user = await UserModel.findOne({
+    where: {
+      [Op.or]: [{ id }, { mobile }]
+    }
+  });
+  if (!user) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "用户不存在");
+  }
+  user.set("mobile", mobile);
+  await user.save();
+  return user.getDataValue("id");
+}
+
 
 /**
  * 用户登录

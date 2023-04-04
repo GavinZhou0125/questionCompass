@@ -62,6 +62,19 @@ export async function userRegisterApi(event, req, res) {
   }
   return await userRegister(username, password, mobile, captchaUuid, captcha);
 }
+/**
+ * 用户注册
+ * @param event 请求参数
+ * @param req 请求体
+ * @param res 响应体
+ */
+export async function userChangeMobileApi(event, req, res) {
+  const { auth, mobile, captchaUuid, captcha } = event;
+  if (!auth || !mobile || !captchaUuid || !captcha) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  return await userChangeMobileApi( mobile, captchaUuid, captcha);
+}
 
 export async function userChangeAvatarApi(event, req, res) {
   const { auth, avatar } = event;

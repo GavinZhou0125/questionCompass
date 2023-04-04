@@ -1,5 +1,5 @@
 import { addFileApi } from "./controller/fileController";
-import { queryUserByIdApi } from "./controller/userController";
+import { queryUserByIdApi, userChangeMobileApi } from "./controller/userController";
 import { questionReputationChangeApi } from "./controller/questionController";
 
 export const routes = [
@@ -15,6 +15,12 @@ export const routes = [
     method: "POST",
     path: "/user/getCaptcha",
     handler: require("./controller/userController").userGetCaptchaApi
+  },
+  {
+    security: false,
+    method: "POST",
+    path: "/user/changeMobile",
+    handler: require("./controller/userController").userChangeMobileApi
   },
   {
     security: false,
