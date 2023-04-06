@@ -17,24 +17,28 @@ const SALT = "coder_zxy";
 
 /**
  * 获取验证码
- * @param mobile
+ * @param mobile 手机号
+ * @param changePhoneNum 是否是更换手机号
  * @return {Promise<boolean>}
  */
-export async function userGetCaptcha(mobile) {
+export async function userGetCaptcha(mobile:string,changePhoneNum:boolean) {
   // 校验
   validatePhoneNum(mobile);
-  let user = await UserModel.findOne({
-    where: {
-      [Op.or]: [{ mobile }]
+  // 校验手机号是否已被注册
+  if (!changePhoneNum) {
+    let user = await UserModel.findOne({
+      where: {
+        [Op.or]: [{ mobile }]
+      }
+    });
+    if (user) {
+      throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该手机号已被注册");
     }
-  });
-  if (user) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "该手机号已被注册");
   }
   // 生成验证码
-  let captcha = generateRandomFourDigitNumber();
+  let captcha: string = generateRandomFourDigitNumber();
   // 生成验证码对应的uuid
-  const captchaUuid = v4();
+  const captchaUuid: string = v4();
   // 存入redis
   redisClient.set(captchaUuid, captcha, "EX", 60 * 60);
   // 发送短信

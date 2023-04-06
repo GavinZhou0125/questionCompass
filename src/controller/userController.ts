@@ -16,12 +16,25 @@ import {
  * @param req 请求体
  * @param res 响应体
  */
+export async function userGetCaptchaWithVerifyApi(event, req, res) {
+  const { mobile } = event;
+  if (!mobile) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "缺少手机号");
+  }
+  return await userGetCaptcha(mobile,false);
+}
+/**
+ * 获取验证码
+ * @param event 请求参数
+ * @param req 请求体
+ * @param res 响应体
+ */
 export async function userGetCaptchaApi(event, req, res) {
   const { mobile } = event;
   if (!mobile) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "缺少手机号");
   }
-  return await userGetCaptcha(mobile);
+  return await userGetCaptcha(mobile,true);
 }
 
 /**
