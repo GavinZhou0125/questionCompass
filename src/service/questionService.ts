@@ -80,7 +80,7 @@ export async function queryQuestion(questionId) {
     }
   });
   if (question) {
-    await questionReputationChange(questionId, 1);
+    // await questionReputationChange(questionId, 1);
     return question;
   }
   return new MyError(NOT_FOUND_ERROR_CODE, "问题不存在");

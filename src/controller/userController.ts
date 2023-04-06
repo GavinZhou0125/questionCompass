@@ -3,6 +3,7 @@ import MyError from "../exception";
 import {
   queryUser,
   userChangeAvatar,
+  userChangeMobile,
   userGetCaptcha,
   userLogin,
   userLogout,
@@ -21,8 +22,9 @@ export async function userGetCaptchaWithVerifyApi(event, req, res) {
   if (!mobile) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "缺少手机号");
   }
-  return await userGetCaptcha(mobile,false);
+  return await userGetCaptcha(mobile, false);
 }
+
 /**
  * 获取验证码
  * @param event 请求参数
@@ -34,7 +36,7 @@ export async function userGetCaptchaApi(event, req, res) {
   if (!mobile) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "缺少手机号");
   }
-  return await userGetCaptcha(mobile,true);
+  return await userGetCaptcha(mobile, true);
 }
 
 /**
@@ -75,6 +77,7 @@ export async function userRegisterApi(event, req, res) {
   }
   return await userRegister(username, password, mobile, captchaUuid, captcha);
 }
+
 /**
  * 用户注册
  * @param event 请求参数
@@ -82,11 +85,11 @@ export async function userRegisterApi(event, req, res) {
  * @param res 响应体
  */
 export async function userChangeMobileApi(event, req, res) {
-  const { auth, mobile, captchaUuid, captcha } = event;
-  if (!auth || !mobile || !captchaUuid || !captcha) {
+  const { user, mobile, captchaUuid, captcha } = event;
+  if (!user || !mobile || !captchaUuid || !captcha) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
-  return await userChangeMobileApi( mobile, captchaUuid, captcha);
+  return await userChangeMobile(user, mobile, captchaUuid, captcha);
 }
 
 export async function userChangeAvatarApi(event, req, res) {
