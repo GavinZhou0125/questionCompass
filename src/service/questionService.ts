@@ -15,7 +15,7 @@ import sequelize from "../db";
  * @param userId 用户id
  */
 export async function addQuestion(title, imageId, content, tags, userId) {
-  if (!title || !content || !tags || !(userId + 1)) {
+  if (!(title.length > 2 && title.length < 9) || !(content.length > 9 && content.length < 51) || !tags || !(userId + 1)) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
   const question = await QuestionModel.create({
@@ -142,6 +142,30 @@ export async function queryQuestionList(offset, limit) {
 }
 
 /**
+ * 查询问题列表按热度
+ * @param offset 分页开始
+ * @param limit 分页结束
+ */
+export async function queryQuestionByHeatList(offset, limit) {
+  QuestionModel.belongsTo(FileModel, { foreignKey: "problem_title_image_id", targetKey: "file_id" });
+  const questionList = await QuestionModel.findAll({
+    include: [FileModel],
+    offset: Number.parseInt(offset),
+    limit: Number.parseInt(limit),
+    where: {
+      problem_answer_id: null
+    },
+    order: [
+      ["problem_reputation", "DESC"]
+    ]
+  });
+  if (questionList) {
+    return questionList;
+  }
+  return new MyError(NOT_FOUND_ERROR_CODE, "问题列表为空");
+}
+
+/**
  * 根据标签查询问题列表
  * @param tag 标签
  * @param offset 分页开始
@@ -179,7 +203,7 @@ export async function queryQuestionListByUser(userId, offset, limit) {
       creator: Number.parseInt(userId),
       //是问题
       problem_answer_id: {
-        [Op.is]: null,
+        [Op.is]: null
       }
 
     },
@@ -208,7 +232,7 @@ export async function queryAnswerListByUser(userId, offset, limit) {
       creator: Number.parseInt(userId),
       //是回答
       problem_answer_id: {
-        [Op.not]: null,
+        [Op.not]: null
       }
     },
     offset: Number.parseInt(offset),
@@ -338,8 +362,8 @@ export async function questionReputationChange(questionId, reputation) {
     }
   });
   if (question) {
-      question.set("problem_reputation", question.get("problem_reputation") + reputation);
-      question.save();
-    return question;
+    question.set("problem_reputation", question.get("problem_reputation") + reputation);
+    question.save();
+    return "ok";
   }
 }

@@ -1,6 +1,6 @@
 import { addFileApi } from "./controller/fileController";
 import { queryUserByIdApi, userChangeMobileApi, userGetCaptchaWithVerifyApi } from "./controller/userController";
-import { questionReputationChangeApi } from "./controller/questionController";
+import { queryQuestionListHeatApi, questionReputationChangeApi } from "./controller/questionController";
 
 export const routes = [
   //用户登录注册
@@ -112,6 +112,12 @@ export const routes = [
     method: "GET",
     path: "/question/list",
     handler: require("./controller/questionController").queryQuestionListApi
+  },
+  {
+    security: true,
+    method: "GET",
+    path: "/question/listByHeat",
+    handler: require("./controller/questionController").queryQuestionListHeatApi
   },
   {
     security: true,

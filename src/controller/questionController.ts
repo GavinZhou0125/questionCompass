@@ -5,7 +5,7 @@ import {
   answerQuestion,
   deleteQuestion,
   queryAnswerList, queryAnswerListByUser,
-  queryQuestion,
+  queryQuestion, queryQuestionByHeatList,
   queryQuestionList,
   queryQuestionListByContent,
   queryQuestionListByTag,
@@ -23,16 +23,11 @@ import redisClient from "../cache";
  * @param res 响应
  */
 export async function addQuestionApi(event, req, res) {
-  const { title, imageId, content, tags, token } = event;
-  if (!title || !content || !tags || !token) {
+  const { title, imageId, content, tags, auth } = event;
+  if (!title || !content || !tags || !auth) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
-  const creator = await redisClient.get(token, (err, reply) => {
-    if (err) {
-      throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误,token查询失败");
-    }
-  });
-  return addQuestion(title, imageId, content, tags, creator);
+  return addQuestion(title, imageId, content, tags, auth);
 }
 
 
@@ -92,6 +87,20 @@ export async function queryQuestionListApi(event, req, res) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
   return queryQuestionList(offset, limit);
+}
+
+/**
+ * 查询问题列表按热度
+ * @param event 参数
+ * @param req 请求
+ * @param res 响应
+ */
+export async function queryQuestionListHeatApi(event, req, res) {
+  const { offset, limit } = event;
+  if (!offset || !limit) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  }
+  return queryQuestionByHeatList(offset, limit);
 }
 
 /**
