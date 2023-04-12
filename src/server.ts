@@ -115,8 +115,6 @@ class ExpressServer {
             code: HTTP_STATUS_CODE.UNAUTHORIZED,
             data: "请先登录"
           };
-          // res.send(result);
-          return;
           // 登录过
         } else {
           // 校验登录状态
@@ -129,10 +127,12 @@ class ExpressServer {
                 code: HTTP_STATUS_CODE.UNAUTHORIZED,
                 data: "登录已过期"
               };
-              return;
             }
           });
-
+        }
+        if (result != undefined){
+          res.send(result) ;
+          return ;
         }
       }
 

@@ -156,7 +156,7 @@ export const routes = [
     handler: require("./controller/questionController").questionReputationChangeApi
   },
   {
-    security: true,
+    security: false,
     method: "POST",
     path: "/upload",
     handler: require("./controller/fileController").addFileApi

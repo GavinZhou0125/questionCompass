@@ -21,7 +21,8 @@ const QuestionModel = sequelize.define("question_table", {
   problem_title_image_id: {
     type: DataTypes.INTEGER,
     allowNull: true,
-    comment: "问题标题图片"
+    comment: "问题标题图片",
+    defaultValue: 19
   },
   problem_content: {
     type: DataTypes.TEXT,

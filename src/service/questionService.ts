@@ -15,12 +15,12 @@ import sequelize from "../db";
  * @param userId 用户id
  */
 export async function addQuestion(title, imageId, content, tags, userId) {
-  if (!(title.length > 2 && title.length < 9) || !(content.length > 9 && content.length < 51) || !tags || !(userId + 1)) {
-    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
+  if (!(title.length > 7 && title.length < 21) || !(content.length > 9 && content.length < 201) || !tags || !(userId + 1)) {
+    throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数长度错误");
   }
   const question = await QuestionModel.create({
     problem_title: title,
-    problem_title_image_id: Number.parseInt(imageId),
+    problem_title_image_id: imageId ? Number.parseInt(imageId) : 19,
     problem_content: content,
     problem_tags: tags,
     creator: userId
@@ -115,6 +115,37 @@ export async function queryAnswerList(questionId, offset, limit) {
   }
   return new MyError(NOT_FOUND_ERROR_CODE, "回答列表为空");
 }
+
+
+/**
+ * 根据内容查询问题列表
+ * @param content 内容
+ * @param offset 分页开始
+ * @param limit 分页结束
+ */
+export async function queryQuestionListByContent(content, offset, limit) {
+  QuestionModel.belongsTo(FileModel, { foreignKey: "problem_title_image_id", targetKey: "file_id" });
+  const questionList = await QuestionModel.findAll({
+    include: [FileModel],
+    where: {
+      problem_content: {
+        [Op.like]: `%${content}%`
+      },
+      problem_answer_id: null
+    },
+    offset: Number.parseInt(offset),
+    limit: Number.parseInt(limit),
+    order: [
+      ["create_time", "DESC"],
+      ["problem_reputation", "DESC"]
+    ]
+  });
+  if (questionList) {
+    return questionList;
+  }
+  return new MyError(NOT_FOUND_ERROR_CODE, "问题列表为空");
+}
+
 
 /**
  * 查询问题列表
@@ -259,32 +290,6 @@ export async function queryQuestionListByTitle(title, offset, limit) {
     where: {
       problem_title: {
         [Op.like]: `%${title}%`
-      }
-    },
-    offset: Number.parseInt(offset),
-    limit: Number.parseInt(limit),
-    order: [
-      ["create_time", "DESC"],
-      ["problem_reputation", "DESC"]
-    ]
-  });
-  if (questionList) {
-    return questionList;
-  }
-  return new MyError(NOT_FOUND_ERROR_CODE, "问题列表为空");
-}
-
-/**
- * 根据内容查询问题列表
- * @param content 内容
- * @param offset 分页开始
- * @param limit 分页结束
- */
-export async function queryQuestionListByContent(content, offset, limit) {
-  const questionList = await QuestionModel.findAll({
-    where: {
-      problem_content: {
-        [Op.like]: `%${content}%`
       }
     },
     offset: Number.parseInt(offset),

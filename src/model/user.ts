@@ -42,7 +42,7 @@ const UserModel = sequelize.define('user', {
     head_img: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        defaultValue: 0
+        defaultValue: 1
     },
     e_mail: {
         type: DataTypes.STRING(255),
