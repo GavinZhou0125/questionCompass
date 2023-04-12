@@ -66,10 +66,12 @@ export async function answerQuestion(questionId, answerContent, userId) {
  * @param questionId 问题id
  */
 export async function queryQuestion(questionId) {
+  QuestionModel.belongsTo(FileModel, { foreignKey: "problem_title_image_id", targetKey: "file_id" });
   if (!questionId) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "参数错误");
   }
   const question = await QuestionModel.findOne({
+    include: [FileModel],
     where: {
       problem_id: Number.parseInt(questionId)
     },
