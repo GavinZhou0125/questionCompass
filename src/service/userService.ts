@@ -167,7 +167,10 @@ export async function userLogin(mobile, password) {
     throw new MyError(REQUEST_PARAMS_ERROR_CODE, "密码错误");
   }
   const sessionId = v4();
-  redisClient.set(sessionId, user.get("id"), "EX", 60 * 60 * 24 * 7);
+  redisClient.set(sessionId, user.get("id"));
+
+  // 默认10分钟过期
+  redisClient.expire(sessionId, 60 * 10);
   const res = {
     id: user.get("id"),
     name: user.get("name"),
