@@ -26,7 +26,8 @@ const visitLogModel = sequelize.define("visit_log",{
     allowNull:false
   }
 },{
-  tableName:"visit_log"
+  tableName:"visit_log",
+  timestamps:false
 })
 
 export default visitLogModel;

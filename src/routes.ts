@@ -160,6 +160,12 @@ export const routes = [
     method: "POST",
     path: "/upload",
     handler: require("./controller/fileController").addFileApi
+  },
+  {
+    security: true,
+    method: "POST",
+    path: "/log/addVisitLog",
+    handler: require("./controller/visitLogContrller").addLog
   }
 ];
 export default routes;

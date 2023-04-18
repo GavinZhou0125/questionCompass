@@ -25,7 +25,8 @@ const preferModel = sequelize.define("prefer_table",{
     allowNull:true
   }
 },{
-  tableName:"prefer_table"
+  tableName:"prefer_table",
+  timestamps:false
 })
 
 export default preferModel;
