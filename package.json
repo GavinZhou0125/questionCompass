@@ -11,6 +11,7 @@
     "@alicloud/dysmsapi20170525": "^2.0.23",
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.21.0",
+    "@types/cors": "^2.8.13",
     "@types/jest": "^29.5.0",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.7.2",

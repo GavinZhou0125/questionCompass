@@ -12,7 +12,8 @@ import upload from "./middleware/upload";
 import { devConfig } from "./config/config";
 import * as path from "path";
 import { validateToken } from "./utils/baseHelper";
-
+// const cors = require('cors');
+import cors from "cors"
 
 const RedisStore = connectRedis(expressSession);
 
@@ -33,7 +34,7 @@ class ExpressServer {
     this.contextPath = "/api";
     this.app.use(morgan("short"));
     this.app.use(bodyParser.json({ limit: requestLimit }));
-
+    this.app.use(cors())
     this.app.use("/upload",express.static(path.join(__dirname, devConfig.upload.requestPath)));
     //debug 使用 form-data 方式传参
     // this.app.use(bodyParser.urlencoded({ limit: requestLimit }));
